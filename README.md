@@ -63,7 +63,7 @@ For more details, refer to a step-by-step manual provided in the relevant refere
 
 ## Output
 
-Once `IONISE_main.R` is properly executed, a CSV file named `post_samples.csv` is created. This file contains posterior samples of β, `k_(τ_I)`, `s_(τ_I)`, `μ_(τ_I)`, and `R` in the first, second, third, fourth, and fifth columns, respectively.
+Once `IONISE_main.R` is properly executed, a CSV file named `post_samples.csv` is created. This file contains posterior samples of β, `k_(τ_I)`, `s_(τ_I)`, `μ_(τ_I)`, and `R` in the first, second, third, fourth, and fifth columns, respectively. Note that the burn-in period and thinning for the MCMC iterations are not automatically applied in the code. To obtain independent posterior samples from the MCMC iterations, users may need to apply the burn-in period and thinning.
 
 ## Expected Runtimes
 
