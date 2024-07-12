@@ -144,7 +144,6 @@ MCMC_function_SEIR <- function(data_R, S_init, E_init, I_init, R_init,
   
   AR_list = rep(0, nrepeat)
   
-  
   for(kk in 2:nrepeat){
     if(kk %% 100 == 2 || kk %% max(round(nrepeat/100), 1) == 0){
       cat(paste("Iteration: ", kk," out of ",nrepeat, ". ", round(kk/nrepeat * 100,1),"% done.", sep = ""))

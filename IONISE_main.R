@@ -1,4 +1,4 @@
-setwd("/Users/hyukpyohong/Dropbox/Delay_SEIR_paper/Release code") # set the working directory contains the code file named "IONISE_source.R"
+setwd("~/usrdirectory") # set the working directory contains the code file named "IONISE_source.R"
 # load the module of source codes needed to perform the package.
 source("IONISE_source.R")
 
@@ -13,8 +13,13 @@ estim_infect = TRUE # TRUE if the user wants to estimate the infectious period d
 
 # Specify parameters for MCMC sampling
 # the expected run time highly depends on the number of iterations for the MCMC algorithm, the number of data points, and other settings.
-nrepeat = 1000 # for the example data, the expected run time is approximately 1 hours per 10,000 iterations.
-tun_beta = 0.1 # tuning parameter; proposal variance for the MH algorithm sampling the transmission rate, beta. 
+jump = round(1/thinning) # The reciprocal of the thinning rate.
+burn = 1000 #The length of the burn-in period, which determines the number of initial MCMC samples discarded to ensure that the remaining MCMC samples are independent from their initial value. 
+thinning = 1/10 # The thinning rate of the MCMC iteration. 
+effnum = 100 #The number of effective MCMC iterations. Its default value is 1000. 
+nrepeat = burn + effnum * jump # The total number of MCMC iterations is burn + effnum * jump.
+tun_beta = 0.01 # tuning parameter; proposal variance for the MH algorithm sampling the transmission rate, beta.
+selrow = seq(from = burn + jump, to = nrepeat, by = jump)
 
 # specify the distribution type for the delay distributions in the model (i.e., latent and infectious distributions)
 # dist_type is one of c("exp", "gamma", "invgamma", "lognormal", "weibull")
@@ -22,7 +27,7 @@ dist_type = "gamma"
 
 # specify the type of the likelihood function for the inference.
 # lik_type is one of c("poisson", "gaussian")
-lik_type = "gaussian"
+lik_type = "poisson"
 
 # Specify the mean and variance for prior distributions of beta and infectious period distribution parameters
 prior_mean_beta = 1
@@ -40,9 +45,9 @@ if(model_type == "SEIR"){
     # The SEIR model requires to specify the initial conditions of the four variables.
     y_init = list(S_init = 10^8, E_init = 0, I_init = 1, R_init = 0) 
     
-    # The default values(COVID-19) below are from Lauer et al, 2020, Annals of Internal Medicine.
-    latent_mean = 5.51
-    latent_var = 5.22
+    # The default values (COVID-19) below are from Xin et al. (2022), Clinical Infectious Diseases, https://doi.org/10.1093/cid/ciab746
+    latent_mean = 5.5
+    latent_var = 7.4
     
     # If estim_infect is TRUE then infect_mean and infect_var are used as the initial values for MCMC sampling.
     infect_mean = 6
@@ -116,6 +121,15 @@ mcmc.result = MCMC_function(data_R, y_init, param_set, initial_phase, estim_infe
                             prior_mean_beta, prior_mean_infect_shape, prior_mean_infect_scale, prior_var_beta, prior_var_infect_shape, prior_var_infect_scale, 
                             nrepeat, tun_beta, dist_type = dist_type, model_type = model_type, lik_type = lik_type)
 
-write.table(x = cbind(mcmc.result[,c(1,4,5)], mcmc.result[,4]*mcmc.result[,5], mcmc.result[,1] * mcmc.result[,4] * mcmc.result[,5]),
-            file="post_samples.csv",sep=",", 
+mcmc.result.proc = mcmc.result[selrow,]
+
+tauI.result = c()
+for(ii in 1:length(selrow)){
+    tmp = param_to_mean_var(mcmc.result.proc[ii,4], mcmc.result.proc[ii,5], dist_type = dist_type)
+    tauI.result[ii] = tmp$mean
+}
+
+write.table(x = cbind(mcmc.result.proc[,c(1,4,5)], tauI.result, mcmc.result.proc[,1] * tauI.result),
+            file="post_samples.csv",sep=",",
             col.names=c("beta", "infect_shape", "infect_scale", "mean_infect", "reproduction"), row.names=F)
+
