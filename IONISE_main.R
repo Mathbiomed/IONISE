@@ -13,10 +13,10 @@ estim_infect = TRUE # TRUE if the user wants to estimate the infectious period d
 
 # Specify parameters for MCMC sampling
 # the expected run time highly depends on the number of iterations for the MCMC algorithm, the number of data points, and other settings.
+burn = 10000 #The length of the burn-in period, which determines the number of initial MCMC samples discarded to ensure that the remaining MCMC samples are independent from their initial value. 
+thinning = 1/100 # The thinning rate of the MCMC iteration. 
 jump = round(1/thinning) # The reciprocal of the thinning rate.
-burn = 1000 #The length of the burn-in period, which determines the number of initial MCMC samples discarded to ensure that the remaining MCMC samples are independent from their initial value. 
-thinning = 1/10 # The thinning rate of the MCMC iteration. 
-effnum = 100 #The number of effective MCMC iterations. Its default value is 1000. 
+effnum = 1000 #The number of effective MCMC iterations. Its default value is 1000. 
 nrepeat = burn + effnum * jump # The total number of MCMC iterations is burn + effnum * jump.
 tun_beta = 0.01 # tuning parameter; proposal variance for the MH algorithm sampling the transmission rate, beta.
 selrow = seq(from = burn + jump, to = nrepeat, by = jump)
